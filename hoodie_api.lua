@@ -1364,12 +1364,38 @@ function HwidManager:EnableSpoofer() end
     Bound in: LuaPlugin::RegisterCustomLuaFunctions
 ----------------------------------------------------------------------------]]
 
+--- A single visibleIf condition.
+--- @class MenuVisibleIfCondition
+--- @field field string The config field ID to check.
+--- @field value string|number|boolean The value to match.
+MenuVisibleIfCondition = {}
+
+--- Options shared by most menu items.
+--- @class MenuItemOptions
+--- @field visibleIf? MenuVisibleIfCondition|MenuVisibleIfCondition[] Show this item only when a condition is met. Accepts a single condition or an array for OR logic.
+MenuItemOptions = {}
+
+--- Options for MenuManager:AddTextInput.
+--- @class MenuTextInputOptions : MenuItemOptions
+--- @field placeholder? string Placeholder text shown when the field is empty.
+MenuTextInputOptions = {}
+
+--- Options for MenuManager:AddListBox.
+--- @class MenuListBoxOptions
+--- @field placeholder? string Placeholder text for the add-item input.
+MenuListBoxOptions = {}
+
+--- Options for MenuManager:AddButton.
+--- @class MenuButtonOptions : MenuItemOptions
+--- @field description? string Tooltip text shown on hover.
+MenuButtonOptions = {}
+
 --- @class MenuManager
 MenuManager = {}
 
 --- Starts a new visual section in the menu.
 --- @param title string
---- @param options? table Optional: { visibleIf = { field = "fieldId", value = true } }
+--- @param options? MenuItemOptions
 function MenuManager:BeginSection(title, options) end
 
 --- Ends the current visual section.
@@ -1378,7 +1404,7 @@ function MenuManager:EndSection() end
 --- Adds a checkbox toggle.
 --- @param id string Unique identifier for saving config.
 --- @param label string Display text.
---- @param options? table Optional: { visibleIf = { field = "fieldId", value = true } }
+--- @param options? MenuItemOptions
 function MenuManager:AddCheckbox(id, label, options) end
 
 --- Adds a slider for numeric values.
@@ -1386,13 +1412,13 @@ function MenuManager:AddCheckbox(id, label, options) end
 --- @param label string Display text.
 --- @param min number Minimum value.
 --- @param max number Maximum value.
---- @param options? table Optional: { visibleIf = { field = "fieldId", value = "someValue" } }
+--- @param options? MenuItemOptions
 function MenuManager:AddSlider(id, label, min, max, options) end
 
 --- Adds a text input field.
 --- @param id string Unique identifier.
 --- @param label string Display text.
---- @param options? table Optional: { visibleIf = { field = "fieldId", value = true } }
+--- @param options? MenuTextInputOptions
 function MenuManager:AddTextInput(id, label, options) end
 
 --- Adds a number input field.
@@ -1400,27 +1426,32 @@ function MenuManager:AddTextInput(id, label, options) end
 --- @param label string Display text.
 --- @param min? number Default 0.
 --- @param max? number Default 100.
---- @param options? table Optional: { visibleIf = { field = "fieldId", value = true } }
+--- @param options? MenuItemOptions
 function MenuManager:AddNumberInput(id, label, min, max, options) end
 
 --- Adds a dropdown combobox.
 --- @param id string Unique identifier.
 --- @param label string Display text.
 --- @param options string[] A list of string options.
---- @param opts? table Optional: { visibleIf = { field = "fieldId", value = "Sound" } }
+--- @param opts? MenuItemOptions
 function MenuManager:AddCombobox(id, label, options, opts) end
 
 --- Adds a clickable button.
 --- @param label string Button text displayed on the UI.
 --- @param functionName string Name of the Lua function to call when clicked.
---- @param options? table Optional: { description = "tooltip text", visibleIf = { field = "fieldId", value = true } }
+--- @param options? MenuButtonOptions
 function MenuManager:AddButton(label, functionName, options) end
 
 --- Adds a listbox for managing string arrays.
 --- @param id string Unique identifier.
 --- @param label string Display text.
---- @param options? table Optional: { placeholder = "Enter item..." }
+--- @param options? MenuListBoxOptions
 function MenuManager:AddListBox(id, label, options) end
+
+--- Options for picker fields (item/mob pickers).
+--- @class MenuPickerOptions : MenuItemOptions
+--- @field placeholder? string Placeholder text for the search input.
+MenuPickerOptions = {}
 
 --- Adds a hotkey picker field.
 --- The value stored in plugin.settings[id] is a packed integer:
@@ -1429,43 +1460,47 @@ function MenuManager:AddListBox(id, label, options) end
 --- Use Hotkey.Unpack() or Hotkey.IsPressed() to work with the value.
 --- @param id string Unique identifier.
 --- @param label string Display text.
---- @param options? table Optional: { visibleIf = { field = "fieldId", value = true } }
+--- @param options? MenuItemOptions
 function MenuManager:AddHotkey(id, label, options) end
 
 --- Adds an item picker field (searchable item vnum selector).
 --- The value stored in plugin.settings[id] is the selected item vnum as an integer.
 --- @param id string Unique identifier.
 --- @param label string Display text.
---- @param options? table Optional: { placeholder = "Search items...", visibleIf = { field = "fieldId", value = true } }
+--- @param options? MenuPickerOptions
 function MenuManager:AddItemPicker(id, label, options) end
 
 --- Adds a mob picker field (searchable mob vnum selector).
 --- The value stored in plugin.settings[id] is the selected mob vnum as an integer.
 --- @param id string Unique identifier.
 --- @param label string Display text.
---- @param options? table Optional: { placeholder = "Search mobs...", visibleIf = { field = "fieldId", value = true } }
+--- @param options? MenuPickerOptions
 function MenuManager:AddMobPicker(id, label, options) end
 
 --- Adds a multi-select item picker list (searchable, allows multiple item vnums).
 --- The value stored in plugin.settings[id] is an array of selected item vnums.
 --- @param id string Unique identifier.
 --- @param label string Display text.
---- @param options? table Optional: { placeholder = "Search items...", visibleIf = { field = "fieldId", value = true } }
+--- @param options? MenuPickerOptions
 function MenuManager:AddItemPickerList(id, label, options) end
 
 --- Adds a multi-select mob picker list (searchable, allows multiple mob vnums).
 --- The value stored in plugin.settings[id] is an array of selected mob vnums.
 --- @param id string Unique identifier.
 --- @param label string Display text.
---- @param options? table Optional: { placeholder = "Search mobs...", visibleIf = { field = "fieldId", value = true } }
+--- @param options? MenuPickerOptions
 function MenuManager:AddMobPickerList(id, label, options) end
 
 --- Adds a table with multiple columns (returns TableBuilder for chaining).
 --- @param id string Unique identifier.
 --- @param label string Display text.
---- @param options? table Optional: { visibleIf = { field = "fieldId", value = true } }
+--- @param options? MenuItemOptions
 --- @return TableBuilder
 function MenuManager:AddTable(id, label, options) end
+
+--- Adds a horizontal separator line within the current section.
+--- Useful for visually grouping related fields without creating a new section.
+function MenuManager:AddSeparator() end
 
 
 --[[----------------------------------------------------------------------------
@@ -1976,7 +2011,11 @@ end
 --[[----------------------------------------------------------------------------
     CONDITIONAL VISIBILITY EXAMPLES
     
-    Use visibleIf to show/hide fields based on other field values
+    Use visibleIf to show/hide fields based on other field values.
+    
+    Single condition:  visibleIf = { field = "x", value = "val" }
+    OR array:          visibleIf = { {field="x", value="A"}, {field="x", value="B"} }
+                       (field is visible if ANY condition matches)
 ----------------------------------------------------------------------------]]
 
 --[[ EXAMPLE 1: Show field only when checkbox is enabled
@@ -2031,6 +2070,24 @@ function SetupMenu(menu)
     
     menu:AddNumberInput("timeout", "Timeout (ms)", 100, 5000, {
         visibleIf = { field = "enableAdvanced", value = true }
+    })
+    
+    menu:EndSection()
+end
+]]
+
+--[[ EXAMPLE 4: OR logic — show field when mode is one of several values
+function SetupMenu(menu)
+    menu:BeginSection("Mode Settings")
+    
+    menu:AddCombobox("mode", "Mode", {"Farming", "Grinding", "AFK"})
+    
+    -- This field shows when mode is "Farming" OR "Grinding" (not "AFK")
+    menu:AddSlider("attackRange", "Attack Range", 100, 2000, {
+        visibleIf = {
+            { field = "mode", value = "Farming" },
+            { field = "mode", value = "Grinding" },
+        }
     })
     
     menu:EndSection()
