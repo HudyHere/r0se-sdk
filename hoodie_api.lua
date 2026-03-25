@@ -59,9 +59,8 @@ function Vector3:Distance(other) end
 --- @return number
 function Vector3:Distance2D(other) end
 
---- Returns a copy of this vector with the Z component set to 0.
---- Useful for 2D calculations on the ground plane.
---- @return Vector3
+--- Returns a new Vector2(x, y) from this vector's XY components.
+--- @return Vector2
 function Vector3:ToVector2() end
 
 --- Returns a new point extended from the current position towards a target position.
@@ -99,6 +98,140 @@ function Vector3:IsPointInsideSector(origin, direction, angle, radius) end
 --- @param radius number The radius of the circle.
 --- @return boolean
 function Vector3:IsInsideCircle(center, radius) end
+
+--- Computes the dot product of this vector and another.
+--- @param other Vector3
+--- @return number
+function Vector3:Dot(other) end
+
+--- Computes the cross product of this vector and another.
+--- @param other Vector3
+--- @return Vector3
+function Vector3:Cross(other) end
+
+--- Returns true if all components are exactly zero.
+--- @return boolean
+function Vector3:IsZero() end
+
+--- Linearly interpolates between this vector and another.
+--- t=0 returns this, t=1 returns other.
+--- @param other Vector3
+--- @param t number Blend factor [0..1].
+--- @return Vector3
+function Vector3:Lerp(other, t) end
+
+--- Clamps each component between the corresponding components of minV and maxV.
+--- @param minV Vector3
+--- @param maxV Vector3
+--- @return Vector3
+function Vector3:Clamp(minV, maxV) end
+
+--- Returns a Vector3(0, 0, 0).
+--- @return Vector3
+function Vector3.Zero() end
+
+--- Returns a Vector3(1, 1, 1).
+--- @return Vector3
+function Vector3.One() end
+
+--- Returns a Vector3(0, 1, 0) — the forward direction in Metin2 convention.
+--- @return Vector3
+function Vector3.Forward() end
+
+
+--[[----------------------------------------------------------------------------
+    Vector2
+    Defined in: HoodieSDK/Utility/Vector2.h
+    Bound in: LuaPlugin::RegisterVector2Bindings
+    Use for: screen coordinates, minimap positions, any pure 2D value.
+----------------------------------------------------------------------------]]
+
+--- @class Vector2
+--- @field x number The X component.
+--- @field y number The Y component.
+--- @operator add(Vector2): Vector2
+--- @operator sub(Vector2): Vector2
+--- @operator mul(number): Vector2
+--- @operator div(number): Vector2
+--- @operator unm: Vector2
+Vector2 = {}
+
+--- Creates a new Vector2.
+--- @param x? number Default: 0.0
+--- @param y? number Default: 0.0
+--- @return Vector2
+function Vector2.new(x, y) end
+
+--- Returns the squared magnitude. Faster than Length() — avoids sqrt.
+--- @return number
+function Vector2:LengthSquared() end
+
+--- Returns the magnitude (length) of the vector.
+--- @return number
+function Vector2:Length() end
+
+--- Normalizes the vector in-place.
+--- @return Vector2 Returns self (modified).
+function Vector2:Normalize() end
+
+--- Returns a normalized copy. Does not modify the original.
+--- @return Vector2
+function Vector2:Normalized() end
+
+--- Dot product.
+--- @param other Vector2
+--- @return number
+function Vector2:Dot(other) end
+
+--- 2D cross product — returns the scalar Z component of the 3D cross.
+--- Positive = other is to the left of self, negative = right.
+--- @param other Vector2
+--- @return number
+function Vector2:Cross(other) end
+
+--- Euclidean distance to another Vector2.
+--- @param other Vector2
+--- @return number
+function Vector2:Distance(other) end
+
+--- Squared distance to another Vector2. Faster than Distance() for comparisons.
+--- @param other Vector2
+--- @return number
+function Vector2:DistanceSq(other) end
+
+--- Linear interpolation. t=0 returns self, t=1 returns other.
+--- @param other Vector2
+--- @param t number Blend factor [0..1].
+--- @return Vector2
+function Vector2:Lerp(other, t) end
+
+--- Clamps each component between the corresponding components of minV and maxV.
+--- @param minV Vector2
+--- @param maxV Vector2
+--- @return Vector2
+function Vector2:Clamp(minV, maxV) end
+
+--- Checks if this vector is approximately equal to another within epsilon.
+--- @param other Vector2
+--- @param epsilon? number Default: 1e-5
+--- @return boolean
+function Vector2:IsNear(other, epsilon) end
+
+--- Returns true if both components are exactly zero.
+--- @return boolean
+function Vector2:IsZero() end
+
+--- Returns a Vector2(0, 0).
+--- @return Vector2
+function Vector2.Zero() end
+
+--- Returns a Vector2(1, 1).
+--- @return Vector2
+function Vector2.One() end
+
+--- Returns a Vector2(0, 1) — forward direction.
+--- @return Vector2
+function Vector2.Forward() end
 
 --[[----------------------------------------------------------------------------
     Engine
@@ -685,6 +818,9 @@ NetworkManager = {}
 
 -- 1. Connection & Core
 
+--- Disconnects from the game server.
+function NetworkManager:Disconnect() end
+
 --- Initiates a connection to the game server.
 function NetworkManager:ConnectGameServer() end
 
@@ -876,9 +1012,11 @@ function ExchangeManager:AddItem(itemCell, exchangeWindowSlotIndex) end
 function ExchangeManager:AddYang(yangAmount) end
 
 --- Returns the name of the trade partner.
+--- @return string
 function ExchangeManager:GetPartnerName() end
 
---- Returns whether or not the trade has been accepted by partenr yet.
+--- Returns whether the trade has been accepted by the partner.
+--- @return boolean
 function ExchangeManager:GetAcceptFromPartner() end
 
 
@@ -1035,7 +1173,8 @@ function ShopManager:HasShopData() end
 function ShopManager:BuyFromShop(shopVid, displayPos) end
 
 --- Gets the current cached shop's item data.
---- @return table[] Array of shop items with fields: vnum, count, won, yang, name, slot.
+--- Returns an opaque array of shop item records. Pass directly to CollectShopData.
+--- @return table[]
 function ShopManager:GetCurrentShopData() end
 
 --- Clears the cached shop data after reading it.
@@ -1306,6 +1445,20 @@ function MenuManager:AddItemPicker(id, label, options) end
 --- @param label string Display text.
 --- @param options? table Optional: { placeholder = "Search mobs...", visibleIf = { field = "fieldId", value = true } }
 function MenuManager:AddMobPicker(id, label, options) end
+
+--- Adds a multi-select item picker list (searchable, allows multiple item vnums).
+--- The value stored in plugin.settings[id] is an array of selected item vnums.
+--- @param id string Unique identifier.
+--- @param label string Display text.
+--- @param options? table Optional: { placeholder = "Search items...", visibleIf = { field = "fieldId", value = true } }
+function MenuManager:AddItemPickerList(id, label, options) end
+
+--- Adds a multi-select mob picker list (searchable, allows multiple mob vnums).
+--- The value stored in plugin.settings[id] is an array of selected mob vnums.
+--- @param id string Unique identifier.
+--- @param label string Display text.
+--- @param options? table Optional: { placeholder = "Search mobs...", visibleIf = { field = "fieldId", value = true } }
+function MenuManager:AddMobPickerList(id, label, options) end
 
 --- Adds a table with multiple columns (returns TableBuilder for chaining).
 --- @param id string Unique identifier.
@@ -1609,6 +1762,8 @@ RenderPass = {
     - Pulse:   Breathing alpha animation — the shape smoothly fades in and out.
     - Dashed:  Animated marching-ants dashed pattern (lines/boxes only).
     - Rainbow: Hue cycles through the full spectrum over time.
+    - Glow:    Neon glow with additive bloom halo. Controlled by glowIntensity.
+    - Simple:  Plain solid color, no shader effects.
 ----------------------------------------------------------------------------]]
 
 --- @enum DrawEffect
@@ -1618,6 +1773,23 @@ DrawEffect = {
     Dashed  = 2, -- Animated dashed line pattern (marching ants). Best on lines/boxes.
     Rainbow = 3, -- Hue shifts through the color spectrum over time.
     Glow    = 4, -- Neon glow: bright core + soft additive bloom halo. Use glowIntensity to control.
+    Simple  = 5, -- Plain solid color, no shaders.
+}
+
+--[[----------------------------------------------------------------------------
+    CircleMode Enum
+    Defined in: Implementations/Rendering/RenderManager.h
+    Bound in: LuaPlugin::RegisterUtilityManagerBindings
+
+    Controls how a circle's Z coordinates are determined.
+    - Flat:    All vertices share the center's Z (default). Fast, works on flat ground.
+    - Terrain: Each vertex samples terrain height. Follows hills and slopes.
+----------------------------------------------------------------------------]]
+
+--- @enum CircleMode
+CircleMode = {
+    Flat    = 0, -- Default. All vertices at center Z.
+    Terrain = 1, -- Each vertex follows terrain height.
 }
 
 --[[----------------------------------------------------------------------------
@@ -1629,67 +1801,118 @@ DrawEffect = {
 --- @class RenderManager
 RenderManager = {}
 
+--- @class DrawLine3DOpts
+--- @field pass?          RenderPass  When to render (default: RenderPass.Deep).
+--- @field effect?        DrawEffect  Visual effect (default: DrawEffect.None).
+--- @field lineWidth?     number      Tube radius in world units (default: 2.0).
+--- @field glowIntensity? number      Glow brightness for DrawEffect.Glow (default: 1.5).
+
 --- Draws a 3D line in world space between two positions.
---- The line will be visible in the game world and affected by camera perspective.
 --- @param startPos Vector3 Starting position in world coordinates.
---- @param endPos Vector3 Ending position in world coordinates.
---- @param color integer ARGB color value (e.g., 0xFFFF0000 for red, 0xFF00FF00 for green).
---- @param pass? RenderPass When to render (default: RenderPass.Deep).
---- @param effect? DrawEffect Visual effect (default: DrawEffect.None).
---- @param lineWidth? number Tube radius in world units (default: 2.0). Smaller = thinner lines.
---- @param glowIntensity? number Glow brightness for DrawEffect.Glow (default: 1.5). Higher = brighter neon.
+--- @param endPos   Vector3 Ending position in world coordinates.
+--- @param color    integer ARGB color value (e.g., 0xFF00FF00 for green).
+--- @param opts?    DrawLine3DOpts Optional settings table.
 --- @usage RenderManager:DrawLine3D(playerPos, targetPos, 0xFF00FF00)
---- @usage RenderManager:DrawLine3D(playerPos, targetPos, 0xFF00FF00, RenderPass.Mid, DrawEffect.Glow, 1.5, 2.0)
-function RenderManager:DrawLine3D(startPos, endPos, color, pass, effect, lineWidth, glowIntensity) end
+--- @usage RenderManager:DrawLine3D(playerPos, targetPos, 0xFF00FF00, { pass = RenderPass.Mid, effect = DrawEffect.Glow, glowIntensity = 2.0 })
+function RenderManager:DrawLine3D(startPos, endPos, color, opts) end
 
---- Draws a 3D circle in world space (horizontal plane).
---- The circle will be rendered as a filled radial gradient.
---- @param center Vector3 Center position in world coordinates.
---- @param radius number Radius of the circle in game units.
---- @param color integer ARGB color value (e.g., 0xFFFF0000 for red).
---- @param segments? integer Number of segments (default: 32). Higher = smoother but slower.
---- @param pass? RenderPass When to render (default: RenderPass.Deep).
---- @param effect? DrawEffect Visual effect (default: DrawEffect.None).
---- @usage RenderManager:DrawCircle3D(playerPos, 500, 0xFF00FF00, 64)
---- @usage RenderManager:DrawCircle3D(bossPos, 800, 0xFFFF0000, 48, RenderPass.Mid, DrawEffect.Rainbow)
-function RenderManager:DrawCircle3D(center, radius, color, segments, pass, effect) end
+--- @class DrawCircle3DOpts
+--- @field segments?     integer    Number of segments (default: 32).
+--- @field pass?         RenderPass When to render (default: RenderPass.Deep).
+--- @field effect?       DrawEffect Visual effect (default: DrawEffect.None).
+--- @field mode?         CircleMode How Z is determined (default: CircleMode.Flat).
+--- @field thickness?    number     Ring thickness 0.0–1.0 (default: 1.0 = filled).
+--- @field gradientSize? number     Gradient depth 0.0–1.0 (default: 0.5).
 
---- Draws a 3D box (wireframe) in world space.
---- The box will be rendered as 12 lines connecting 8 corner points.
+--- Draws a 3D circle in world space.
 --- @param center Vector3 Center position in world coordinates.
---- @param size Vector3 Size of the box (width, depth, height).
---- @param color integer ARGB color value (e.g., 0xFFFF0000 for red).
---- @param throughWalls? boolean Whether the box is visible through walls (default: true).
---- @param pass? RenderPass When to render (default: RenderPass.Deep).
---- @param effect? DrawEffect Visual effect (default: DrawEffect.None).
---- @param lineWidth? number Tube radius for box edges (default: 2.0).
---- @param glowIntensity? number Glow brightness for DrawEffect.Glow (default: 1.5).
+--- @param radius number  Radius in game units.
+--- @param color  integer ARGB color value.
+--- @param opts?  DrawCircle3DOpts Optional settings table.
+--- @usage RenderManager:DrawCircle3D(playerPos, 500, 0xFF00FF00)
+--- @usage RenderManager:DrawCircle3D(bossPos, 800, 0xFFFF0000, { segments = 64, effect = DrawEffect.Rainbow, mode = CircleMode.Terrain })
+function RenderManager:DrawCircle3D(center, radius, color, opts) end
+
+--- @class DrawBox3DOpts
+--- @field pass?          RenderPass When to render (default: RenderPass.Deep).
+--- @field effect?        DrawEffect Visual effect (default: DrawEffect.None).
+--- @field lineWidth?     number     Tube radius for edges (default: 2.0).
+--- @field glowIntensity? number     Glow brightness for DrawEffect.Glow (default: 1.5).
+
+--- Draws a 3D wireframe box in world space.
+--- @param center Vector3 Center position in world coordinates.
+--- @param size   Vector3 Box dimensions (width, depth, height).
+--- @param color  integer ARGB color value.
+--- @param opts?  DrawBox3DOpts Optional settings table.
 --- @usage RenderManager:DrawBox3D(entityPos, Vector3.new(100, 100, 200), 0xFF00FF00)
---- @usage RenderManager:DrawBox3D(entityPos, Vector3.new(100, 100, 200), 0xFF00FF00, true, RenderPass.Mid, DrawEffect.Glow, 1.0, 2.5)
-function RenderManager:DrawBox3D(center, size, color, throughWalls, pass, effect, lineWidth, glowIntensity) end
+--- @usage RenderManager:DrawBox3D(entityPos, Vector3.new(100, 100, 200), 0xFFFF0000, { effect = DrawEffect.Glow, glowIntensity = 2.5 })
+function RenderManager:DrawBox3D(center, size, color, opts) end
 
---- Draws 2D text on the screen at fixed screen coordinates.
---- The text will always be visible regardless of camera position.
---- @param text string The text to display.
---- @param x integer Screen X coordinate in pixels (0 = left edge).
---- @param y integer Screen Y coordinate in pixels (0 = top edge).
---- @param color integer ARGB color value (e.g., 0xFFFFFFFF for white).
---- @param fontSize? integer Font size in pixels (default: 14).
---- @param pass? RenderPass When to render (default: RenderPass.Deep).
---- @usage RenderManager:DrawText2D("FPS: 60", 10, 10, 0xFFFFFFFF, 16)
-function RenderManager:DrawText2D(text, x, y, color, fontSize, pass) end
+--- @class DrawText2DOpts
+--- @field fontSize? integer    Font size in pixels (default: 16).
+--- @field pass?     RenderPass When to render (default: RenderPass.Deep).
 
---- Draws text at a 3D world position that automatically projects to screen space.
---- The text will move with the world position and disappear if behind the camera.
---- Perfect for entity labels, distance indicators, etc.
---- @param text string The text to display.
+--- Draws 2D text at fixed screen coordinates.
+--- @param text  string  The text to display.
+--- @param x     integer Screen X in pixels (0 = left).
+--- @param y     integer Screen Y in pixels (0 = top).
+--- @param color integer ARGB color value.
+--- @param opts? DrawText2DOpts Optional settings table.
+--- @usage RenderManager:DrawText2D("Hello", 10, 10, 0xFFFFFFFF)
+--- @usage RenderManager:DrawText2D("Hello", 10, 10, 0xFFFFFFFF, { fontSize = 20, pass = RenderPass.Mid })
+function RenderManager:DrawText2D(text, x, y, color, opts) end
+
+--- @class DrawText3DOpts
+--- @field fontSize? integer    Font size in pixels (default: 16).
+--- @field pass?     RenderPass When to render (default: RenderPass.Deep).
+
+--- Draws text at a 3D world position projected to screen space.
+--- Returns without drawing if the position is behind the camera.
+--- @param text     string  The text to display.
 --- @param worldPos Vector3 Position in world coordinates.
---- @param color integer ARGB color value (e.g., 0xFFFF0000 for red).
---- @param fontSize? integer Font size in pixels (default: 14).
---- @param pass? RenderPass When to render (default: RenderPass.Deep).
---- @usage RenderManager:DrawText3D("Enemy", entityPos, 0xFFFF0000, 12)
---- @usage RenderManager:DrawText3D("Enemy", entityPos, 0xFFFF0000, 12, RenderPass.Mid)
-function RenderManager:DrawText3D(text, worldPos, color, fontSize, pass) end
+--- @param color    integer ARGB color value.
+--- @param opts?    DrawText3DOpts Optional settings table.
+--- @usage RenderManager:DrawText3D("Enemy", entityPos, 0xFFFF0000)
+--- @usage RenderManager:DrawText3D("Enemy", entityPos, 0xFFFF0000, { fontSize = 12, pass = RenderPass.Mid })
+function RenderManager:DrawText3D(text, worldPos, color, opts) end
+
+--- @class DrawRoundedRect2DOpts
+--- @field filled?        boolean    Filled or outline only (default: true).
+--- @field borderWidth?   number     Outline width when not filled (default: 2.0).
+--- @field cornerSegments? integer   Smoothness of corners (default: 8).
+--- @field pass?          RenderPass When to render (default: RenderPass.Deep).
+--- @field effect?        DrawEffect Visual effect (default: DrawEffect.Simple).
+
+--- Draws a 2D rounded rectangle on screen.
+--- @param x            integer Screen X of top-left corner.
+--- @param y            integer Screen Y of top-left corner.
+--- @param width        number  Width in pixels.
+--- @param height       number  Height in pixels.
+--- @param cornerRadius number  Corner rounding radius.
+--- @param color        integer ARGB color value.
+--- @param opts?        DrawRoundedRect2DOpts Optional settings table.
+--- @usage RenderManager:DrawRoundedRect2D(10, 10, 200, 50, 8, 0xCC000000)
+--- @usage RenderManager:DrawRoundedRect2D(10, 10, 200, 50, 8, 0xFF00FF00, { filled = false, borderWidth = 2.0 })
+function RenderManager:DrawRoundedRect2D(x, y, width, height, cornerRadius, color, opts) end
+
+--- @class DrawRoundedRect3DOpts
+--- @field filled?         boolean    Filled or outline only (default: true).
+--- @field borderWidth?    number     Outline width when not filled (default: 2.0).
+--- @field cornerSegments? integer    Smoothness of corners (default: 8).
+--- @field pass?           RenderPass When to render (default: RenderPass.Deep).
+--- @field effect?         DrawEffect Visual effect (default: DrawEffect.Simple).
+
+--- Draws a 3D rounded rectangle in world space (flat on the ground plane).
+--- @param center       Vector3 Center position in world coordinates.
+--- @param width        number  Width in game units.
+--- @param height       number  Height (depth) in game units.
+--- @param cornerRadius number  Corner rounding radius.
+--- @param rotation     number  Rotation in degrees (0 = facing +Y / north).
+--- @param color        integer ARGB color value.
+--- @param opts?        DrawRoundedRect3DOpts Optional settings table.
+--- @usage RenderManager:DrawRoundedRect3D(playerPos, 400, 400, 30, 0, 0xFF00FF00)
+--- @usage RenderManager:DrawRoundedRect3D(playerPos, 400, 400, 30, 45, 0xFF00BFFF, { filled = false, effect = DrawEffect.Pulse })
+function RenderManager:DrawRoundedRect3D(center, width, height, cornerRadius, rotation, color, opts) end
 
 --- Converts a 3D world position to 2D screen coordinates.
 --- Returns nil if the position is behind the camera or outside the viewport.
@@ -1698,11 +1921,6 @@ function RenderManager:DrawText3D(text, worldPos, color, fontSize, pass) end
 --- @usage local screen = RenderManager:WorldToScreen(entityPos)
 ---       if screen then print("Screen X:", screen.x, "Y:", screen.y) end
 function RenderManager:WorldToScreen(worldPos) end
-
---- Clears all queued draw commands.
---- Normally called automatically each frame, but can be used to manually clear the queue.
---- @usage RenderManager:ClearDrawList()
-function RenderManager:ClearDrawList() end
 
 
 --[[----------------------------------------------------------------------------
@@ -1880,6 +2098,14 @@ VK = {
     Opacity values are 0.0–1.0.
 ----------------------------------------------------------------------------]]
 
+--- @class Waypoint
+--- @field id string Unique waypoint identifier.
+--- @field label string Display label for the waypoint.
+--- @field x number World X coordinate.
+--- @field y number World Y coordinate.
+--- @field mapName string Name of the map this waypoint belongs to.
+--- @field order integer Sort order index.
+
 --- @class Minimap
 Minimap = {}
 
@@ -1926,8 +2152,7 @@ function Minimap:DrawLine(from, to, color, strokeOpacity) end
 
 --- Returns all waypoints for the current map, sorted by order index.
 --- Waypoints are set from the web UI and pushed to the bot via socket.
---- Each waypoint is a table: { id, label, x, y, mapName, order }
---- @return table Array of waypoint tables sorted by order.
+--- @return Waypoint[] Array of waypoint objects sorted by order.
 --- @usage
 --- local waypoints = Minimap:GetWaypoints()
 --- for _, wp in ipairs(waypoints) do
